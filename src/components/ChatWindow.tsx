@@ -110,10 +110,11 @@ export const ChatWindow: React.FC = () => {
                             }
                         );
                     } else if (data.type === 'response') {
+                        // Ajouter le message de l'assistant
                         const assistantMessage: Message = {
                             id: Date.now().toString(),
                             role: 'assistant',
-                            content: data.content || 'Sorry, I could not process your message.',
+                            content: data.content,
                             timestamp: new Date()
                         };
                         setMessages(prev => [...prev, assistantMessage]);
@@ -190,10 +191,21 @@ export const ChatWindow: React.FC = () => {
         setInputMessage('');
 
         try {
+            // Envoyer le message à l'agent
             wsRef.current.send(JSON.stringify({
-                type: 'message',
-                content: inputMessage
+                type: 'agent_message',
+                content: inputMessage,
+                tools: availableTools
             }));
+
+            // Ajouter un message de "thinking" temporaire
+            const thinkingMessage: Message = {
+                id: 'thinking',
+                role: 'assistant',
+                content: '...',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, thinkingMessage]);
         } catch (error) {
             console.error('Error sending message:', error);
             const errorMessage: Message = {
